@@ -1,0 +1,12 @@
+# Java Class Files #
+*.class
+
+# Log file
+*.log
+
+### Maven ###
+target/
+/.m2
+/.mvn
+/.maven
+/.repository

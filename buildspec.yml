@@ -1,0 +1,23 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - echo mvn started on `date`
+      - mvn install
+      - echo pre_build started on `date`
+      - REPOSITORY_URI=576243807950.dkr.ecr.ap-northeast-1.amazonaws.com/test-single-mvn-demo
+      - aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin $REPOSITORY_URI
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+  build:
+    commands:
+      - echo build started on `date`
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo post_build started on `date`
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - printf '[{"name":"test-single-mvn-demo","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+artifacts:
+    files: imagedefinitions.json
